@@ -19,6 +19,10 @@
 		2) you must implement and export SmithQueryPlugin.  you must populate a name in the PLUGININFO struct.
 		   you must return 1337 from the function. the authoritykey must not be modified unless you have special instruction to do so.
 
+		after this point, your plugin will appear in smith's mod list.
+		if the user has enabled your mod, then there is no further action you need to do.
+		smith will initialize your plugin and call the appropriate functions during engine operation.
+
 
 		NOTE:  smith is essentially a singlethreaded engine. therefore, expect all smith -> plugin calls to be
 		done from the main engine thread (unless otherwise noted).  as well, assume that all plugin -> smith calls
