@@ -36,20 +36,21 @@ CreateProceduralTexture(texture_id, width, height, format, pixelData) :
 
 void DoTextureExperiment()
 {
-	Bitmap* bmp = new Bitmap(256, 128);
+	/*Bitmap* bmp = new Bitmap(256, 128);
 	Graphics* gfx = Graphics::FromImage(bmp);
 	
 	gfx->FillRectangle(&SolidBrush(Color::Black), Rect(0, 0, bmp->GetWidth(), bmp->GetHeight()));
 
 	gfx->DrawEllipse(&Pen(Color::White, 3.0f), Rect(30, 30, 10, 10));
-
+	
+	delete gfx;
 
 	HBITMAP hBitmap;
 	bmp->GetHBITMAP(Color::Black, &hBitmap);
 	smith->GenerateMaterial("$$dummytest1.mat", "dflt.cmp", 0, false, hBitmap, NULL);
 	DeleteObject(hBitmap);
 
-	delete bmp;
+	delete bmp;*/
 }
 
 
