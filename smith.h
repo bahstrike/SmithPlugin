@@ -3,12 +3,22 @@
 
 		basically just create a win32 C DLL which exports regular ass, non-mangled functions.
 		ensure you export the minimum required symbols for smith to recognize u as a valid plugin.
+		your dll also needs to specify file version information (eg. resource file / VERSIONINFO) with smith in the file description.
 
 		follow either the sample project, or this header, to use the API. there is no .lib or additional DLL that
 		you are required to link in; just export the right symbols and call the methods of SMITHCALLS in order
 		to manipulate the engine.
 
 		put your dll in the same directory as smith.exe and thats it.
+
+
+		there are basically two tricks to getting smith to recognize and load your plugin:
+		1) you must create a resource file / version info and somewhere in the FileDescription include the word "smith" (case insensitive).
+		   this serves a number of purposes for stability, performance and security by not even attempting to load DLLs that do not flag themselves as smith plugins.
+
+		2) you must implement and export SmithQueryPlugin.  you must populate a name in the PLUGININFO struct.
+		   you must return 1337 from the function. the authoritykey must not be modified unless you have special instruction to do so.
+
 
 		NOTE:  smith is essentially a singlethreaded engine. therefore, expect all smith -> plugin calls to be
 		done from the main engine thread (unless otherwise noted).  as well, assume that all plugin -> smith calls
