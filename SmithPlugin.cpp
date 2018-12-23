@@ -1,6 +1,11 @@
 #include <Windows.h>
+#include <GdiPlus.h>
 #include "smith.h"
 #include <stdio.h>
+
+using namespace Gdiplus;
+
+SMITHCALLS *smith = nullptr;
 
 /*
 ================================== =
@@ -28,7 +33,24 @@ CreateProceduralTexture(texture_id, width, height, format, pixelData) :
 	- The engine swaps in the correct pixel data pointer for the texture being used on the object_id by the provided material_id.
 */
 
-SMITHCALLS *smith = nullptr;
+
+void DoTextureExperiment()
+{
+	Bitmap* bmp = new Bitmap(256, 128);
+	Graphics* gfx = Graphics::FromImage(bmp);
+	
+	gfx->FillRectangle(&SolidBrush(Color::Black), Rect(0, 0, bmp->GetWidth(), bmp->GetHeight()));
+
+	gfx->DrawEllipse(&Pen(Color::White, 3.0f), Rect(30, 30, 10, 10));
+
+
+	HBITMAP hBitmap;
+	bmp->GetHBITMAP(Color::Black, &hBitmap);
+	smith->GenerateMaterial("$$dummytest1.mat", "dflt.cmp", 0, false, hBitmap, NULL);
+	DeleteObject(hBitmap);
+
+	delete bmp;
+}
 
 
 extern "C" {
@@ -39,6 +61,14 @@ extern "C" {
 			return;
 
 
+	}
+
+	void __cdecl OnPrepareMainRender(double dt, double truedt)
+	{
+		if (smith == nullptr)
+			return;
+
+		DoTextureExperiment();
 	}
 
 	void __cdecl OnLevelShutdownPreObject()

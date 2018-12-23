@@ -91,14 +91,17 @@ extern "C"
 	// game stuff in a callback that you know the game is running, or call IsInGame  to check first.
 	typedef int(__cdecl *dIsInGame)();
 
-	// generates a procedural texture object with a unique ID as a name. 
-	//typedef TEXTURE* (__cdecl *dCreateProceduralTexture)(int uniqueID, int width, int height, PIXDATAFORMAT format, void* pixeldata);
+	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
+	// the mat name does not need to exist and therefore can be used to generate unique render targets
+	// if the mat does exist, its pixeldata is simply updated. this also works on regular game textures that have already been loaded.
+	typedef unsigned int(__cdecl *dGenerateMaterial)(const char* szMatName, const char* szColormap, int nCel, int bAllowUpscale, HBITMAP hBitmap, HBITMAP hEmissive);
 }
 
 struct SMITHCALLS
 {
 	dExecuteCOG ExecuteCOG;
 	dIsInGame IsInGame;
+	dGenerateMaterial GenerateMaterial;
 };
 
 
@@ -135,6 +138,11 @@ struct SMITHCALLS
 // dt = deltatime, intended for use in all simulation and engine tasks. may be conditioned eg. if game runs worse than 20fps then dt will be clamped to 1/20.  as well, if there is any kind of world slowmo, this dt will be augmented to include that
 // truedt = actual deltatime since last frame. please do not use this unless you really know why you need it over dt
 //void __cdecl OnMainLoop(double dt, double truedt)
+
+// called by the engine every cycle of the engine's main loop, at the very beginning of the render subsystem.
+// the renderer context has just been bound at this point and so it is a good time to do any prep work like
+// updating texture data etc.
+//void __cdecl OnPrepareMainRender(double dt, double truedt)
 
 //-Called by the engine before it starts cleaning up any world objects from memory.
 //- AArcade uses this to tell internal mutli - thread systems that they should be suspended.
