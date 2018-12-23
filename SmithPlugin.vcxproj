@@ -39,9 +39,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -54,10 +56,10 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>SmithPlugin.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy /y $(OutDir)SmithPlugin.dll c:\Smith\bin\Debug\SmithPlugin.dll
-copy /y $(OutDir)SmithPlugin.pdb c:\Smith\bin\Debug\SmithPlugin.pdb</Command>
+      <Command>copy /y $(OutDir)SmithPlugin.dll $(SolutionDir)SmithPlugin.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,10 +77,10 @@ copy /y $(OutDir)SmithPlugin.pdb c:\Smith\bin\Debug\SmithPlugin.pdb</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <ModuleDefinitionFile>SmithPlugin.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy /y $(OutDir)SmithPlugin.dll c:\Smith\bin\Release\SmithPlugin.dll
-copy /y $(OutDir)SmithPlugin.dll $(SolutionDir)SmithPlugin.dll</Command>
+      <Command>copy /y $(OutDir)SmithPlugin.dll $(SolutionDir)SmithPlugin.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

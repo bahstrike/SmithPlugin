@@ -77,7 +77,7 @@ extern "C" {
 
 	int __cdecl OnExecuteCOGVerb(const char* szName, int nNumParams, const char** pszParams, char* szReturn)
 	{
-		if (stricmp(szName, "StrikeStuff") == 0 && nNumParams == 1)
+		if (stricmp(szName, "PluginTest") == 0 && nNumParams == 1)
 		{
 			MessageBox(0, pszParams[0], "SmithPlugin", MB_ICONINFORMATION);
 			return 1;// handled
