@@ -1,0 +1,11 @@
+LIBRARY "SmithPlugin"
+EXPORTS
+	SmithQueryPlugin
+	OnInitializePlugin
+	OnShutdownPlugin
+	OnMainLoop
+	OnLevelShutdownPreObject
+	OnLevelShutdownPostObject
+	OnLevelStartPreObject
+	OnLevelStartPostObject
+	OnExecuteCOGVerb
