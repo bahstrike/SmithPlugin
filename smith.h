@@ -41,7 +41,7 @@
 #pragma once
 
 // please use this to populate PLUGININFO::smithRequiredVer.
-#define SMITHVERSION		109
+#define SMITHVERSION		110
 
 struct PLUGININFO
 {
