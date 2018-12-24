@@ -34,7 +34,7 @@ CreateProceduralTexture(texture_id, width, height, format, pixelData) :
 */
 
 
-typedef void* (__cdecl* dsmk_open_file)(const char* filename, unsigned char mode);
+typedef void*(__cdecl* dsmk_open_memory)(void* buffer, unsigned int size);
 typedef void(__cdecl* dsmk_close)(void* smk);
 typedef char(__cdecl* dsmk_info_all)(void* smk, unsigned int* frame, unsigned int* frame_count, double* usf);
 typedef char(__cdecl* dsmk_info_video)(void* smk, unsigned int* w, unsigned int* h, unsigned char* y_scale_mode);
@@ -46,7 +46,7 @@ typedef char(__cdecl* dsmk_first)(void* smk);
 typedef char(__cdecl*dsmk_next)(void* smk);
 
 HMODULE hSmackerDLL = NULL;
-dsmk_open_file psmk_open_file = nullptr;
+dsmk_open_memory psmk_open_memory = nullptr;
 dsmk_close psmk_close = nullptr;
 dsmk_info_all psmk_info_all = nullptr;
 dsmk_info_video psmk_info_video = nullptr;
@@ -59,16 +59,6 @@ dsmk_next psmk_next = nullptr;
 
 
 /*
-IntPtr smk = smk_open_file
-
-smk_info_all(smk, null, &numframes, &usecPerFrame);
-
-smk_info_video(smk, &width, &height, &yScaleMode);
-
-				smk_enable_video(smk, 1);
-				smk_enable_audio(smk, 0, 0);
-
-				smk_first(smk);
 
 					byte* palette = smk_get_palette(smk);
 					byte* video = smk_get_video(smk);
@@ -76,13 +66,84 @@ smk_info_video(smk, &width, &height, &yScaleMode);
 
 smk_next(smk);
 
-smk_close(smk);
 */
+
+void* smkbuffer = nullptr;
+int smkbufferlen = 0;
+
+void* smk = nullptr;
+
+int smkwidth = 0;
+int smkheight = 0;
+
+int smkframe = 0;
+int smkframes = 0;
+
+void ProcessVideoExperiment()
+{
+	if (psmk_open_memory == nullptr)
+		return;
+
+	if (smkframe > 0)
+		(*psmk_next)(smk);
+
+
+
+	unsigned char* pal = (*psmk_get_palette)(smk);
+	unsigned char* vid = (*psmk_get_video)(smk);
+
+
+
+	int texDepth = 24;
+	int stride = smkwidth * (texDepth / 8);
+
+	unsigned char* pBits = new unsigned char[stride*smkheight];
+
+	for (int y = 0; y < smkheight; y++)
+	{
+		unsigned char* pDst = pBits + stride * y;
+		for (int x = 0; x < smkwidth; x++)
+		{
+			unsigned char val = *(vid++);
+
+			pDst[0] = pal[(val * 3) + 2];
+			pDst[1] = pal[(val * 3) + 1];
+			pDst[2] = pal[(val * 3) + 0];
+
+			pDst += 3;
+		}
+	}
+
+	smith->GenerateMaterial("dflt.mat", "dflt.cmp", 0, smkwidth, smkheight, texDepth, stride, pBits, nullptr);
+
+	delete[] pBits;
+
+
+
+	/*                    byte* palette = smk_get_palette(smk);
+                    byte* video = smk_get_video(smk);
+                    BitmapData bmdat = bmp.LockBits(new Rectangle(0, 0, (int)width, (int)height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+                    for (int y = 0; y < (int)height; y++)
+                    {
+                        byte* pBMPRow = (byte*)((ulong)bmdat.Scan0 + (ulong)(y * bmdat.Stride));
+                        for (int x = 0; x < (int)width; x++)
+                        {
+                            byte val = *(video++);
+
+                            pBMPRow[0] = palette[(val * 3) + 2];
+                            pBMPRow[1] = palette[(val * 3) + 1];
+                            pBMPRow[2] = palette[(val * 3) + 0];
+
+                            pBMPRow += 3;
+                        }
+                    }
+                    bmp.UnlockBits(bmdat);*/
+}
 
 
 void InitVideoExperiment()
 {
-	if (psmk_open_file == nullptr)
+	if (psmk_open_memory == nullptr)
 		return;
 
 	char farts[16];
@@ -92,20 +153,62 @@ void InitVideoExperiment()
 	if (smith->LocateDiskFile(farts, smkpath) == 0)
 		return;
 
-	MessageBox(0, smkpath, farts, 0);
+	FILE* f = fopen(smkpath, "rb");
+	fseek(f, 0, SEEK_END);
+	smkbufferlen = ftell(f);
+	fseek(f, 0, SEEK_SET);
 
-	void* smk = (*psmk_open_file)(smkpath, 0);
+	smkbuffer = new char[smkbufferlen];
+	fread(smkbuffer, smkbufferlen, 1, f);
+	fclose(f);
 
-	if (smk != nullptr)
-		MessageBox(0, "Well shit dude", 0, 0);
+	smk = (*psmk_open_memory)(smkbuffer, smkbufferlen);
+
+	double usecPerFrame;
+	(*psmk_info_all)(smk, nullptr, (unsigned int*)&smkframes, &usecPerFrame);
+
+
+	double fps = 1000000.0 / usecPerFrame;
+	double totalSeconds = (double)smkframes * (1.0 / fps);
+
+	unsigned char fart;
+	(*psmk_info_video)(smk, (unsigned int*)&smkwidth, (unsigned int*)&smkheight, &fart);
+
+
+	//prep for playback
+	(*psmk_enable_video)(smk, 1);
+	(*psmk_enable_audio)(smk, 0, 0);
+
+
+
+
+	// what about loop?
+	(*psmk_first)(smk);
+
+	smkframe = 0;
+	(*psmk_info_all)(smk, (unsigned int*)&smkframe, nullptr, nullptr);
 }
 
 void ShutdownVideoExperiment()
 {
-	if (psmk_open_file == nullptr)
+	if (psmk_open_memory == nullptr)
 		return;
 
+	(*psmk_close)(smk);
+	smk = nullptr;
 
+	if (smkbuffer != nullptr)
+	{
+		delete[] smkbuffer;
+		smkbuffer = nullptr;
+
+		smkbufferlen = 0;
+	}
+
+	smkframe = 0;
+	smkframes = 0;
+	smkwidth = 0;
+	smkheight = 0;
 }
 
 
@@ -162,6 +265,8 @@ void DoTextureExperiment()
 
 		delete[] pBits;
 	}
+
+	ProcessVideoExperiment();
 }
 
 
@@ -270,7 +375,7 @@ extern "C" {
 		hSmackerDLL = LoadLibrary("libSmacker.dll");
 		if (hSmackerDLL != NULL)
 		{
-			psmk_open_file = (dsmk_open_file)GetProcAddress(hSmackerDLL, "smk_open_file");
+			psmk_open_memory = (dsmk_open_memory)GetProcAddress(hSmackerDLL, "smk_open_memory");
 			psmk_close = (dsmk_close)GetProcAddress(hSmackerDLL, "smk_close");
 			psmk_info_all = (dsmk_info_all)GetProcAddress(hSmackerDLL, "smk_info_all");
 			psmk_info_video = (dsmk_info_video)GetProcAddress(hSmackerDLL, "smk_info_video");
@@ -298,7 +403,7 @@ extern "C" {
 
 	void __cdecl OnShutdownPlugin()
 	{
-		psmk_open_file = nullptr;
+		psmk_open_memory = nullptr;
 		psmk_close = nullptr;
 		psmk_info_all = nullptr;
 		psmk_info_video = nullptr;
