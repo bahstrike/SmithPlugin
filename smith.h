@@ -94,7 +94,12 @@ extern "C"
 	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
 	// the mat name does not need to exist and therefore can be used to generate unique render targets
 	// if the mat does exist, its pixeldata is simply updated. this also works on regular game textures that have already been loaded.
-	typedef unsigned int(__cdecl *dGenerateMaterial)(const char* szMatName, const char* szColormap, int nCel, int bAllowUpscale, HBITMAP hBitmap, HBITMAP hEmissive);
+	typedef unsigned int(__cdecl *dGenerateMaterial)(const char* szMatName, const char* szColormap, int nCel, int width, int height, int depth, int stride, const void* pBitmap, const void* pEmissive);
+
+	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
+	// the mat name does not need to exist and therefore can be used to generate unique render targets
+	// if the mat does exist, its pixeldata is simply updated. this also works on regular game textures that have already been loaded.
+	typedef unsigned int(__cdecl *dGenerateMaterialBitmap)(const char* szMatName, const char* szColormap, int nCel, int bAllowUpscale, HBITMAP hBitmap, HBITMAP hEmissive);
 }
 
 struct SMITHCALLS
@@ -102,6 +107,7 @@ struct SMITHCALLS
 	dExecuteCOG ExecuteCOG;
 	dIsInGame IsInGame;
 	dGenerateMaterial GenerateMaterial;
+	dGenerateMaterialBitmap GenerateMaterialBitmap;
 };
 
 
@@ -140,8 +146,8 @@ struct SMITHCALLS
 //void __cdecl OnMainLoop(double dt, double truedt)
 
 // called by the engine every cycle of the engine's main loop, at the very beginning of the render subsystem.
-// the renderer context has just been bound at this point and so it is a good time to do any prep work like
-// updating texture data etc.
+// the renderer context has just been bound at this point and so it is a good time to do any global, per-frame
+// prep work like updating texture data
 //void __cdecl OnPrepareMainRender(double dt, double truedt)
 
 //-Called by the engine before it starts cleaning up any world objects from memory.
