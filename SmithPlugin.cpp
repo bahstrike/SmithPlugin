@@ -79,12 +79,23 @@ int smkheight = 0;
 int smkframe = 0;
 int smkframes = 0;
 
-void ProcessVideoExperiment()
+double smkframetime = 0.0;
+
+double smkfps = 0.0;
+double smktotalSeconds = 0.0;
+
+void ProcessVideoExperiment(double dt, double truedt)
 {
 	if (psmk_open_memory == nullptr)
 		return;
 
-	if (smkframe > 0)
+	smkframetime += dt;
+	if (smkframetime < (1.0 / smkfps))
+		return;
+
+	smkframetime = 0.0;
+
+	if (smkframe++ > 0)
 		(*psmk_next)(smk);
 
 
@@ -106,9 +117,9 @@ void ProcessVideoExperiment()
 		{
 			unsigned char val = *(vid++);
 
-			pDst[0] = pal[(val * 3) + 2];
-			pDst[1] = pal[(val * 3) + 1];
-			pDst[2] = pal[(val * 3) + 0];
+			pDst[0]/*b*/ = pal[(val * 3) + 2];
+			pDst[1]/*g*/ = pal[(val * 3) + 1];
+			pDst[2]/*r*/ = pal[(val * 3) + 0];
 
 			pDst += 3;
 		}
@@ -147,7 +158,7 @@ void InitVideoExperiment()
 		return;
 
 	char farts[16];
-	strcpy(farts, "16a.smk");
+	strcpy(farts, "21A.SMK");
 
 	char smkpath[MAX_PATH];
 	if (smith->LocateDiskFile(farts, smkpath) == 0)
@@ -168,8 +179,8 @@ void InitVideoExperiment()
 	(*psmk_info_all)(smk, nullptr, (unsigned int*)&smkframes, &usecPerFrame);
 
 
-	double fps = 1000000.0 / usecPerFrame;
-	double totalSeconds = (double)smkframes * (1.0 / fps);
+	smkfps = 1000000.0 / usecPerFrame;
+	smktotalSeconds = (double)smkframes * (1.0 / smkfps);
 
 	unsigned char fart;
 	(*psmk_info_video)(smk, (unsigned int*)&smkwidth, (unsigned int*)&smkheight, &fart);
@@ -209,11 +220,13 @@ void ShutdownVideoExperiment()
 	smkframes = 0;
 	smkwidth = 0;
 	smkheight = 0;
+	smkfps = 0.0;
+	smktotalSeconds = 0.0;
 }
 
 
 
-void DoTextureExperiment()
+void DoTextureExperiment(double dt, double truedt)
 {
 	// for one, we'll use a GDI+ bitmap and do some drawing and replace the texture on kyle's back...
 	if(true)
@@ -266,7 +279,7 @@ void DoTextureExperiment()
 		delete[] pBits;
 	}
 
-	ProcessVideoExperiment();
+	ProcessVideoExperiment(dt, truedt);
 }
 
 
@@ -288,7 +301,7 @@ extern "C" {
 		if (smith == nullptr)
 			return;
 
-		DoTextureExperiment();
+		DoTextureExperiment(dt, truedt);
 	}
 
 	void __cdecl OnLevelShutdownPreObject()
