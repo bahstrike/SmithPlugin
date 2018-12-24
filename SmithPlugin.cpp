@@ -57,17 +57,6 @@ dsmk_get_video psmk_get_video = nullptr;
 dsmk_first psmk_first = nullptr;
 dsmk_next psmk_next = nullptr;
 
-
-/*
-
-					byte* palette = smk_get_palette(smk);
-					byte* video = smk_get_video(smk);
-
-
-smk_next(smk);
-
-*/
-
 void* smkbuffer = nullptr;
 int smkbufferlen = 0;
 
@@ -128,27 +117,6 @@ void ProcessVideoExperiment(double dt, double truedt)
 	smith->GenerateMaterial("dflt.mat", "dflt.cmp", 0, smkwidth, smkheight, texDepth, stride, pBits, nullptr);
 
 	delete[] pBits;
-
-
-
-	/*                    byte* palette = smk_get_palette(smk);
-                    byte* video = smk_get_video(smk);
-                    BitmapData bmdat = bmp.LockBits(new Rectangle(0, 0, (int)width, (int)height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
-                    for (int y = 0; y < (int)height; y++)
-                    {
-                        byte* pBMPRow = (byte*)((ulong)bmdat.Scan0 + (ulong)(y * bmdat.Stride));
-                        for (int x = 0; x < (int)width; x++)
-                        {
-                            byte val = *(video++);
-
-                            pBMPRow[0] = palette[(val * 3) + 2];
-                            pBMPRow[1] = palette[(val * 3) + 1];
-                            pBMPRow[2] = palette[(val * 3) + 0];
-
-                            pBMPRow += 3;
-                        }
-                    }
-                    bmp.UnlockBits(bmdat);*/
 }
 
 
