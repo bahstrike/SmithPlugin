@@ -100,6 +100,9 @@ extern "C"
 	// the mat name does not need to exist and therefore can be used to generate unique render targets
 	// if the mat does exist, its pixeldata is simply updated. this also works on regular game textures that have already been loaded.
 	typedef unsigned int(__cdecl *dGenerateMaterialBitmap)(const char* szMatName, const char* szColormap, int nCel, int bAllowUpscale, HBITMAP hBitmap, HBITMAP hEmissive);
+
+	// uses smith's resource system to locate the desired game file; presuming it exists as a full file path
+	typedef int(__cdecl* dLocateDiskFile)(const char* szFileName, char* szFullPath);
 }
 
 struct SMITHCALLS
@@ -108,6 +111,7 @@ struct SMITHCALLS
 	dIsInGame IsInGame;
 	dGenerateMaterial GenerateMaterial;
 	dGenerateMaterialBitmap GenerateMaterialBitmap;
+	dLocateDiskFile LocateDiskFile;
 };
 
 

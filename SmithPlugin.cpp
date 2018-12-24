@@ -34,11 +34,86 @@ CreateProceduralTexture(texture_id, width, height, format, pixelData) :
 */
 
 
+typedef void* (__cdecl* dsmk_open_file)(const char* filename, unsigned char mode);
+typedef void(__cdecl* dsmk_close)(void* smk);
+typedef char(__cdecl* dsmk_info_all)(void* smk, unsigned int* frame, unsigned int* frame_count, double* usf);
+typedef char(__cdecl* dsmk_info_video)(void* smk, unsigned int* w, unsigned int* h, unsigned char* y_scale_mode);
+typedef char(__cdecl* dsmk_enable_video)(void* smk, unsigned char enable);
+typedef char(__cdecl* dsmk_enable_audio)(void* smk, unsigned char track, unsigned char enable);
+typedef unsigned char* (__cdecl*dsmk_get_palette)(void* smk);
+typedef unsigned char*(__cdecl*dsmk_get_video)(void* smk);
+typedef char(__cdecl* dsmk_first)(void* smk);
+typedef char(__cdecl*dsmk_next)(void* smk);
+
+HMODULE hSmackerDLL = NULL;
+dsmk_open_file psmk_open_file = nullptr;
+dsmk_close psmk_close = nullptr;
+dsmk_info_all psmk_info_all = nullptr;
+dsmk_info_video psmk_info_video = nullptr;
+dsmk_enable_video psmk_enable_video = nullptr;
+dsmk_enable_audio psmk_enable_audio = nullptr;
+dsmk_get_palette psmk_get_palette = nullptr;
+dsmk_get_video psmk_get_video = nullptr;
+dsmk_first psmk_first = nullptr;
+dsmk_next psmk_next = nullptr;
+
+
+/*
+IntPtr smk = smk_open_file
+
+smk_info_all(smk, null, &numframes, &usecPerFrame);
+
+smk_info_video(smk, &width, &height, &yScaleMode);
+
+				smk_enable_video(smk, 1);
+				smk_enable_audio(smk, 0, 0);
+
+				smk_first(smk);
+
+					byte* palette = smk_get_palette(smk);
+					byte* video = smk_get_video(smk);
+
+
+smk_next(smk);
+
+smk_close(smk);
+*/
+
+
+void InitVideoExperiment()
+{
+	if (psmk_open_file == nullptr)
+		return;
+
+	char farts[16];
+	strcpy(farts, "16a.smk");
+
+	char smkpath[MAX_PATH];
+	if (smith->LocateDiskFile(farts, smkpath) == 0)
+		return;
+
+	MessageBox(0, smkpath, farts, 0);
+
+	void* smk = (*psmk_open_file)(smkpath, 0);
+
+	if (smk != nullptr)
+		MessageBox(0, "Well shit dude", 0, 0);
+}
+
+void ShutdownVideoExperiment()
+{
+	if (psmk_open_file == nullptr)
+		return;
+
+
+}
+
 
 
 void DoTextureExperiment()
 {
 	// for one, we'll use a GDI+ bitmap and do some drawing and replace the texture on kyle's back...
+	if(true)
 	{
 		Bitmap* bmp = new Bitmap(256, 128);
 		Graphics* gfx = Graphics::FromImage(bmp);
@@ -61,6 +136,7 @@ void DoTextureExperiment()
 
 
 	// next, we'll take a pixeldata buffer and use that directly
+	if(true)
 	{
 		int texWidth = 128;
 		int texHeight = 128;
@@ -74,9 +150,9 @@ void DoTextureExperiment()
 			unsigned char* pDst = pBits + stride * y;
 			for (int x = 0; x < texWidth; x++)
 			{
-				pDst[0] = 0;			// b
-				pDst[1] = rand()%128;			// g
-				pDst[2] = rand() % 255;	// r
+				pDst[0] = rand()%128;			// b
+				pDst[1] = rand()%255;			// g
+				pDst[2] = 0;	// r
 
 				pDst += 3;
 			}
@@ -116,7 +192,7 @@ extern "C" {
 			return;
 
 
-		
+		ShutdownVideoExperiment();
 	}
 
 	void __cdecl OnLevelShutdownPostObject()
@@ -143,6 +219,7 @@ extern "C" {
 		//char playerModel[16];
 		//smith->ExecuteCOG("GetThingModel(GetLocalPlayerThing());", 0, 0, 0, 0, 0, 0, 0, playerModel);
 
+		InitVideoExperiment();
 	}
 
 	int __cdecl OnExecuteCOGVerb(const char* szName, int nNumParams, const char** pszParams, char* szReturn)
@@ -190,6 +267,22 @@ extern "C" {
 		GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 
+		hSmackerDLL = LoadLibrary("libSmacker.dll");
+		if (hSmackerDLL != NULL)
+		{
+			psmk_open_file = (dsmk_open_file)GetProcAddress(hSmackerDLL, "smk_open_file");
+			psmk_close = (dsmk_close)GetProcAddress(hSmackerDLL, "smk_close");
+			psmk_info_all = (dsmk_info_all)GetProcAddress(hSmackerDLL, "smk_info_all");
+			psmk_info_video = (dsmk_info_video)GetProcAddress(hSmackerDLL, "smk_info_video");
+			psmk_enable_video = (dsmk_enable_video)GetProcAddress(hSmackerDLL, "smk_enable_video");
+			psmk_enable_audio = (dsmk_enable_audio)GetProcAddress(hSmackerDLL, "smk_enable_audio");
+			psmk_get_palette = (dsmk_get_palette)GetProcAddress(hSmackerDLL, "smk_get_palette");
+			psmk_get_video = (dsmk_get_video)GetProcAddress(hSmackerDLL, "smk_get_video");
+			psmk_first = (dsmk_first)GetProcAddress(hSmackerDLL, "smk_first");
+			psmk_next = (dsmk_next)GetProcAddress(hSmackerDLL, "smk_next");
+		}
+
+
 		//int thingID = 10;
 		//char szThingID[16];
 		//sprintf(szThingID, "%d", thingID);
@@ -198,12 +291,29 @@ extern "C" {
 
 		//smith->ExecuteCOG("SetThingMass(GetSourceRef(), 999.0);", szThingID, 0, 0, 0, 0, 0, 0, szReturn);
 
+		
 
 		return 1;
 	}
 
 	void __cdecl OnShutdownPlugin()
 	{
+		psmk_open_file = nullptr;
+		psmk_close = nullptr;
+		psmk_info_all = nullptr;
+		psmk_info_video = nullptr;
+		psmk_enable_video = nullptr;
+		psmk_enable_audio = nullptr;
+		psmk_get_palette = nullptr;
+		psmk_get_video = nullptr;
+		psmk_first = nullptr;
+		psmk_next = nullptr;
+		if (hSmackerDLL != NULL)
+		{
+			FreeLibrary(hSmackerDLL);
+			hSmackerDLL = NULL;
+		}
+
 
 		if (gdiplusToken != 0)
 		{
