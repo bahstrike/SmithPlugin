@@ -94,11 +94,19 @@ extern "C"
 	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
 	// the mat name does not need to exist and therefore can be used to generate unique render targets
 	// if the mat does exist, its pixeldata is simply updated. this also works on regular game textures that have already been loaded.
+	//
+	// note:  when replacing an existing mat's pixeldata, it is acceptable to change the texture dimensions. despite JK's texture coords
+	// are in texels rather than 0-1,  smith remembers the original mat's dimensions so the scaling should work fine.  if you 
+	// generate a new mat via this call, the original mat dimensions will be that which you specify here.
 	typedef unsigned int(__cdecl *dGenerateMaterial)(const char* szMatName, const char* szColormap, int nCel, int width, int height, int depth, int stride, const void* pBitmap, const void* pEmissive);
 
 	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
 	// the mat name does not need to exist and therefore can be used to generate unique render targets
 	// if the mat does exist, its pixeldata is simply updated. this also works on regular game textures that have already been loaded.
+	//
+	// note:  when replacing an existing mat's pixeldata, it is acceptable to change the texture dimensions. despite JK's texture coords
+	// are in texels rather than 0-1,  smith remembers the original mat's dimensions so the scaling should work fine.  if you 
+	// generate a new mat via this call, the original mat dimensions will be that which you specify here.
 	typedef unsigned int(__cdecl *dGenerateMaterialBitmap)(const char* szMatName, const char* szColormap, int nCel, int bAllowUpscale, HBITMAP hBitmap, HBITMAP hEmissive);
 
 	// uses smith's resource system to locate the desired game file; presuming it exists as a full file path

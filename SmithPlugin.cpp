@@ -87,7 +87,7 @@ void ProcessVideoExperiment(double dt, double truedt)
 	if (smkframe++ > 0)
 		(*psmk_next)(smk);
 
-
+	
 
 	unsigned char* pal = (*psmk_get_palette)(smk);
 	unsigned char* vid = (*psmk_get_video)(smk);
@@ -114,7 +114,7 @@ void ProcessVideoExperiment(double dt, double truedt)
 		}
 	}
 
-	smith->GenerateMaterial("dflt.mat", "dflt.cmp", 0, smkwidth, smkheight, texDepth, stride, pBits, nullptr);
+	smith->GenerateMaterial("00t_4.mat", "dflt.cmp", 0, smkwidth, smkheight, texDepth, stride, pBits, nullptr);
 
 	delete[] pBits;
 }
@@ -126,8 +126,8 @@ void InitVideoExperiment()
 		return;
 
 	char farts[16];
-	strcpy(farts, "21A.SMK");
-
+	strcpy(farts, "06A.SMK");
+	
 	char smkpath[MAX_PATH];
 	if (smith->LocateDiskFile(farts, smkpath) == 0)
 		return;
