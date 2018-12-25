@@ -114,7 +114,7 @@ void ProcessVideoExperiment(double dt, double truedt)
 		}
 	}
 
-	smith->GenerateMaterial("00t_4.mat", "dflt.cmp", 0, smkwidth, smkheight, texDepth, stride, pBits, nullptr);
+	smith->GenerateMaterial("COMPSCREEN.MAT", "01narsh.cmp", 0, smkwidth, smkheight, texDepth, stride, pBits, nullptr);
 
 	delete[] pBits;
 }
@@ -301,6 +301,13 @@ extern "C" {
 	{
 		if (smith == nullptr)
 			return;
+
+
+		//char masterColormap[16] = { 0 };
+		//smith->ExecuteCOG("returnex(getsectorcolormap(0));", 0, 0, 0, 0, 0, 0, 0, masterColormap);
+		//MessageBox(0, masterColormap, 0, 0);
+
+
 
 		//char playerModel[16];
 		//smith->ExecuteCOG("GetThingModel(GetLocalPlayerThing());", 0, 0, 0, 0, 0, 0, 0, playerModel);

@@ -1,6 +1,8 @@
 /*
 		smith plugin API
 
+		----------------------- OVERVIEW ----------------------------------------------------------------
+
 		basically just create a win32 C DLL which exports regular ass, non-mangled functions.
 		ensure you export the minimum required symbols for smith to recognize u as a valid plugin.
 		your dll also needs to specify file version information (eg. resource file / VERSIONINFO) with smith in the file description.
@@ -12,6 +14,19 @@
 		put your dll in the same directory as smith.exe and thats it.
 
 
+
+		-----------------------  API INDICATIONS FOR USE  ----------------------------------------------------------------
+
+		the actual smith plugin API is literally just this smith.h  header file.
+
+		the intended use of this smith.h header is for you to copy it to your project folder. however i do not
+		suggest modifying it. should you decide to update your plugin in the future, just replace smith.h with the new
+		version and rebuild your dll.
+
+
+
+		--------------------  CONSIDERATION FOR DEVELOPERS  --------------------------------------------------------------------------
+
 		there are basically two tricks to getting smith to recognize and load your plugin:
 		1) you must create a resource file / version info and somewhere in the FileDescription include the word "smith" (case insensitive).
 		   this serves a number of purposes for stability, performance and security by not even attempting to load DLLs that do not flag themselves as smith plugins.
@@ -19,10 +34,29 @@
 		2) you must implement and export SmithQueryPlugin.  you must populate a name in the PLUGININFO struct.
 		   you must return 1337 from the function. the authoritykey must not be modified unless you have special instruction to do so.
 
+		---------------------- CONSIDERATION FOR DEVELOPERS  ---------------------------------------------------------
+
+		additionally, you must ensure that you are actually exporting non-mangled symbols
+
+		if in doubt, load your DLL into dependency walker and ensure the symbols list has names like "SmithQueryPlugin"
+		and not "_SmithQueryPlugin"  or  anything else with crazy characters.
+		this would be "name mangling" which smith assumes does not exist.
+
+		long story short:  if you use a module definition file (*.def  which has been assigned in project settings),  and you
+		declare __cdecl on your export functions,  	and you wrap your export functions with an  extern "C" {  . . .  }   block 
+		then u should be good.  do not trust __declspec(dllexport) unless u know what ur doin.
+
+
+
+		---------------------- SUCCESSFULLY LOADING UR PLUGIN  --------------------------------------------------------------
+
 		after this point, your plugin will appear in smith's mod list.
 		if the user has enabled your mod, then there is no further action you need to do.
 		smith will initialize your plugin and call the appropriate functions during engine operation.
 
+
+
+		----------------------  FINAL CAUTIONARY WORDS  ----------------------------------------------------
 
 		NOTE:  smith is essentially a singlethreaded engine. therefore, expect all smith -> plugin calls to be
 		done from the main engine thread (unless otherwise noted).  as well, assume that all plugin -> smith calls
@@ -33,16 +67,25 @@
 		just try to use best judgement.. if there are calls that LOOK like they would be useful to call at any point,
 		its probably safe to do so.  ill try to notate the ones that are definitely safe / not safe but anyway yeah.
 
-		NOTE:  the intended use of this smith.h header is for you to copy it to your project folder. however i do not
-		suggest modifying it. should you decide to update your plugin in the future, just replace smith.h with the new
-		version and rebuild your dll.
 */
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+// START OF ACTUAL HEADER
+///////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-// please use this to populate PLUGININFO::smithRequiredVer.
-#define SMITHVERSION		110
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+// USE TO POPULATE:       PLUGININFO::smithRequiredVer
+#define SMITHVERSION		110
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+// UR MODS IDENTIFICATION.   populate within  SmithQueryPlugin
+///////////////////////////////////////////////////////////////////////////////////////////////
 struct PLUGININFO
 {
 	char name[16];			// required: name of ur plugin, eg. "Strikes Mod"
@@ -53,23 +96,20 @@ struct PLUGININFO
 	int authoritykey;		// optional: key value to prevent spoofing;  prevents other ppl from making plugins that masquerade or try to override an official plugin. talk to strike to be provided an authority key. if you dont have an authority key algorithm, leave this value as the value passed in (do not change it! or your plugin will not load)
 };
 
-enum PIXDATAFORMAT
-{
-	RGB24,		// 24-bit rgb;  dword aligned
-	ARGB32,		// 32-bit argb
-};
 
-struct TEXTURE
-{
-	int width;
-	int height;
-	PIXDATAFORMAT format;
-	void* pixeldata;
-	int stride;
-};
 
-extern "C"
+///////////////////////////////////////////////////////////////////////////////////////////////
+// PLUGIN -> SMITH   API CALLS
+//
+// this is all the stuff YOU can call on the engine via the SMITHCALLS* interface u are given
+//
+// please read like   "dExecuteCOG"  means you would call it like  "smith->ExecuteCOG()"
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+extern "C"// this helps prevent name mangling on ur exported symbols
 {
+
+
 	// it simply just makes sense to allow plugins to freely execute cog;  this means you can do all sorts of crazy stuff in-game
 	// without having to learn a new API and without me having to write one.
 	//
@@ -85,11 +125,15 @@ extern "C"
 	// and parsing return values etc.
 	typedef void (__cdecl *dExecuteCOG)(const char* szCOGScript, const char* szSourceRef, const char* szSenderRef, const char* szSenderID, const char* szParam0, const char* szParam1, const char* szParam2, const char* szParam3, char* szReturn);
 
+
+
 	// returns 1 if smith game engine is actually running with a level loaded etc, 0 otherwise.
 	// you should probably check this if you decide to try to issue in-game related functions at a weird moment like
 	// ShutdownPlugin (not recommended).  i cant gaurantee it wont crash if u do somethin like that. so basically call all
 	// game stuff in a callback that you know the game is running, or call IsInGame  to check first.
 	typedef int(__cdecl *dIsInGame)();
+
+
 
 	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
 	// the mat name does not need to exist and therefore can be used to generate unique render targets
@@ -99,6 +143,8 @@ extern "C"
 	// are in texels rather than 0-1,  smith remembers the original mat's dimensions so the scaling should work fine.  if you 
 	// generate a new mat via this call, the original mat dimensions will be that which you specify here.
 	typedef unsigned int(__cdecl *dGenerateMaterial)(const char* szMatName, const char* szColormap, int nCel, int width, int height, int depth, int stride, const void* pBitmap, const void* pEmissive);
+
+
 
 	// generates, or updates, an in-memory mat file using the specified parameters and pixeldata.
 	// the mat name does not need to exist and therefore can be used to generate unique render targets
@@ -111,8 +157,12 @@ extern "C"
 
 	// uses smith's resource system to locate the desired game file; presuming it exists as a full file path
 	typedef int(__cdecl* dLocateDiskFile)(const char* szFileName, char* szFullPath);
+
+
 }
 
+
+// the actual struct that smith populates to provide you with function pointers to engine calls
 struct SMITHCALLS
 {
 	dExecuteCOG ExecuteCOG;
@@ -123,7 +173,15 @@ struct SMITHCALLS
 };
 
 
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//  SMITH -> PLUGIN   CALLS
+//
 // SYMBOLS U SHOULD EXPORT FOR A GREAT AND HAPPY PLUGIN
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 
 // REQUIRED:
 // smith uses this to check if a DLL is a valid smith plugin. you must populate name
@@ -134,10 +192,14 @@ struct SMITHCALLS
 // and call InitializePlugin to get the ball rolling.
 //int __cdecl SmithQueryPlugin(PLUGININFO& p)
 
+
+
 // at the point smith decides it will load your plugin during the session, it will load this plugin dll again (if not already loaded)
 // and call InitializePlugin, providing you with a pointer to the SMITHCALLS struct that contains all the available
 // smith engine calls that you will have access to throughout the remainder of the session.
 //int __cdecl InitializePlugin(SMITHCALLS* _smith)
+
+
 
 // once the session is over, smith will call ShutdownPlugin to allow you to gracefully tie up any loose ends.
 // generally, this will be followed by actually unloading this plugin DLL; however that's not gauranteed.
@@ -150,6 +212,7 @@ struct SMITHCALLS
 //void __cdecl ShutdownPlugin()
 
 
+
 //-Called by the engine every cycle of the engine's main loop.
 //- AArcade uses this to perform its own main loop.
 //
@@ -157,10 +220,14 @@ struct SMITHCALLS
 // truedt = actual deltatime since last frame. please do not use this unless you really know why you need it over dt
 //void __cdecl OnMainLoop(double dt, double truedt)
 
+
+
 // called by the engine every cycle of the engine's main loop, at the very beginning of the render subsystem.
 // the renderer context has just been bound at this point and so it is a good time to do any global, per-frame
 // prep work like updating texture data
 //void __cdecl OnPrepareMainRender(double dt, double truedt)
+
+
 
 //-Called by the engine before it starts cleaning up any world objects from memory.
 //- AArcade uses this to tell internal mutli - thread systems that they should be suspended.
@@ -168,11 +235,15 @@ struct SMITHCALLS
 //NOTE:  Shutdown functions may be called multiple times, or called even if a corresponding Start was never called.
 //void __cdecl OnLevelShutdownPreObject()
 
+
+
 //-Called by the engine after all objects are removed from memory.
 //- AArcade uses this to perform general clean - up between sessions.
 //
 //NOTE:  Shutdown functions may be called multiple times, or called even if a corresponding Start was never called.
 //void __cdecl OnLevelShutdownPostObject()
+
+
 
 //-Called by the engine after the map is loaded but prior to any objects being created in it.
 //- AArcade uses this to perform general start - up logic for the session.
@@ -180,11 +251,15 @@ struct SMITHCALLS
 //NOTE: Smith promises to call this 1 time, and will not call again until the corresponding Shutdown functions have been called
 //void __cdecl OnLevelStartPreObject()
 
+
+
 //-Called by the engine after all world - objects are spawned into the world & the world simulation has begun.
 //- AArcade uses this to trigger its own start logic, which includes spawning many objects into the world.
 //
 ////NOTE: Smith promises to call this 1 time, and will not call again until the corresponding Shutdown functions have been called
 //void __cdecl OnLevelStartPostObject()
+
+
 
 // called by smith whenever it is ready to execute a cog verb.  mods get first dibs.
 // returning 1 indicates to smith that the verb was handled and it will not be passed to any other
