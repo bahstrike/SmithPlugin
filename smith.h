@@ -33,40 +33,6 @@
 
 		2) you must implement and export SmithQueryPlugin.  you must populate a name in the PLUGININFO struct.
 		   you must return 1337 from the function. the authoritykey must not be modified unless you have special instruction to do so.
-
-		---------------------- CONSIDERATION FOR DEVELOPERS  ---------------------------------------------------------
-
-		additionally, you must ensure that you are actually exporting non-mangled symbols
-
-		if in doubt, load your DLL into dependency walker and ensure the symbols list has names like "SmithQueryPlugin"
-		and not "_SmithQueryPlugin"  or  anything else with crazy characters.
-		this would be "name mangling" which smith assumes does not exist.
-
-		long story short:  if you use a module definition file (*.def  which has been assigned in project settings),  and you
-		declare __cdecl on your export functions,  	and you wrap your export functions with an  extern "C" {  . . .  }   block 
-		then u should be good.  do not trust __declspec(dllexport) unless u know what ur doin.
-
-
-
-		---------------------- SUCCESSFULLY LOADING UR PLUGIN  --------------------------------------------------------------
-
-		after this point, your plugin will appear in smith's mod list.
-		if the user has enabled your mod, then there is no further action you need to do.
-		smith will initialize your plugin and call the appropriate functions during engine operation.
-
-
-
-		----------------------  FINAL CAUTIONARY WORDS  ----------------------------------------------------
-
-		NOTE:  smith is essentially a singlethreaded engine. therefore, expect all smith -> plugin calls to be
-		done from the main engine thread (unless otherwise noted).  as well, assume that all plugin -> smith calls
-		are NOT thread safe (unless otherwise noted)
-
-		NOTE:  some smith calls may require, or perform optimally, if smith engine is already in the appropriate state.
-		for example, trying to issue renderer calls while not in a renderer-related OnXXXX event.
-		just try to use best judgement.. if there are calls that LOOK like they would be useful to call at any point,
-		its probably safe to do so.  ill try to notate the ones that are definitely safe / not safe but anyway yeah.
-
 */
 
 
