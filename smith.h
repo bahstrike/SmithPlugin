@@ -77,6 +77,13 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
+// REQUIRED INCLUDES
+///////////////////////////////////////////////////////////////////////////////////////////////
+#include <Windows.h>
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 // USE TO POPULATE:       PLUGININFO::smithRequiredVer
 #define SMITHVERSION		111
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,15 +121,20 @@ extern "C"// this helps prevent name mangling on ur exported symbols
 	// without having to learn a new API and without me having to write one.
 	//
 	// note that the cog script should NOT include a symbols section, nor  code / end  keywords.
+	// just put in one or more statements and they will be executed.
 	//
 	// you are responsible for providing the source/sender and params.  your cog script can use the typical
 	// GetSourceRef(),  GetSenderID(), GetParam(0)  etc  to retrieve these values.
 	//
-	// if your cog calls ReturnEx(), this value will be accessible to you via the returned szReturn  value.
+	// if your cog calls ReturnEx(), then this value will be accessible to you via the returned szReturn  value.
 	//
-	// final note: the smith cog VM operates under a Flex symbol type and generally is most compatible as strings.
+	// note: the smith cog VM operates under a Flex symbol type and generally is most compatible as strings.
 	// so for simplicity of interface, all values are strings. you are responsible for formatting integer values into strings
 	// and parsing return values etc.
+	//
+	// final note:  smith will spin up a discardable cog VM to execute this code and thats it.
+	// you wont have access to any symbols or existing variables. as well, you should not record the (temporary) self cog ID.
+	// your cog can, however, send triggers .. or messages to other cogs via their IDs .. and that should be fine.
 	typedef void (__cdecl *dExecuteCOG)(const char* szCOGScript, const char* szSourceRef, const char* szSenderRef, const char* szSenderID, const char* szParam0, const char* szParam1, const char* szParam2, const char* szParam3, char* szReturn);
 
 
@@ -197,6 +209,7 @@ struct SMITHCALLS
 // at the point smith decides it will load your plugin during the session, it will load this plugin dll again (if not already loaded)
 // and call InitializePlugin, providing you with a pointer to the SMITHCALLS struct that contains all the available
 // smith engine calls that you will have access to throughout the remainder of the session.
+// return true (1) for success;  (false (0)  for fail to load associated components)
 //int __cdecl InitializePlugin(SMITHCALLS* _smith)
 
 

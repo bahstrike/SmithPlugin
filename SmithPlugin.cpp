@@ -353,7 +353,7 @@ extern "C" {
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR gdiplusToken = 0;
 
-	int __cdecl OnInitializePlugin(SMITHCALLS* _smith)
+	int __cdecl InitializePlugin(SMITHCALLS* _smith)
 	{
 		smith = _smith;
 
@@ -389,8 +389,11 @@ extern "C" {
 		return 1;
 	}
 
-	void __cdecl OnShutdownPlugin()
+	void __cdecl ShutdownPlugin()
 	{
+		//smith->ExecuteCOG("SetActorFlags(GetLocalPlayerThing(), 0x8);// god mode", 0, 0, 0, 0, 0, 0, 0, 0);
+
+
 		psmk_open_memory = nullptr;
 		psmk_close = nullptr;
 		psmk_info_all = nullptr;

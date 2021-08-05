@@ -1,8 +1,8 @@
 LIBRARY "SmithPlugin"
 EXPORTS
 	SmithQueryPlugin
-	OnInitializePlugin
-	OnShutdownPlugin
+	InitializePlugin
+	ShutdownPlugin
 	OnMainLoop
 	OnLevelShutdownPreObject
 	OnLevelShutdownPostObject
