@@ -246,3 +246,10 @@ struct SMITHCALLS
 // 
 // note: verb name in szName is always lowercase
 //int __cdecl OnExecuteCOGVerb(const char* szName, int nNumParams, const char** pszParams, char* szReturn)
+
+
+
+// called by smith after loading any imagefile and before GPU upload.
+// can implement texture upscaling here.
+// return true(1) if handled,  or false (0) if not
+//int __cdecl OnProcessTexture(void* input, int inWidth, int inHeight, int inStride, void* output, int outStride)
