@@ -59,6 +59,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // UR MODS IDENTIFICATION.   populate within  SmithQueryPlugin
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+// optional flags for PLUGININFO::purpose
+#define PP_TEXTUREUPSCALE		0x0001
+#define PP_SMACKERCUTSCENE		0x0002
+#define PP_SMUSHCUTSCENE		0x0004
+
 struct PLUGININFO
 {
 	char name[16];			// required: name of ur plugin, eg. "Strikes Mod"
@@ -67,6 +73,7 @@ struct PLUGININFO
 	int ver;				// required*: version of your plugin. follow a XYY standard wherein X is major and YY is minor version. eg: 207 -> version 2.7     the default provided is 100  (version 1.0)
 	int smithRequiredVer;	// required*: minimum version of smith that your plugin requires to operate in. same version XYY version standard as described above.  please insert the SMITHVERSION constant
 	int authoritykey;		// optional: key value to prevent spoofing;  prevents other ppl from making plugins that masquerade or try to override an official plugin. talk to strike to be provided an authority key. if you dont have an authority key algorithm, leave this value as the value passed in (do not change it! or your plugin will not load)
+	unsigned int purpose;	// optional: flags to indicate what specific solutions this plugin provides.  populate with flag constants of PP_xxxxxxx, or leave 0 for generic plugin
 };
 
 
@@ -101,7 +108,7 @@ extern "C"// this helps prevent name mangling on ur exported symbols
 	// final note:  smith will spin up a discardable cog VM to execute this code and thats it.
 	// you wont have access to any symbols or existing variables. as well, you should not record the (temporary) self cog ID.
 	// your cog can, however, send triggers .. or messages to other cogs via their IDs .. and that should be fine.
-	typedef void (__cdecl *dExecuteCOG)(const char* szCOGScript, const char* szSourceRef, const char* szSenderRef, const char* szSenderID, const char* szParam0, const char* szParam1, const char* szParam2, const char* szParam3, char* szReturn);
+	typedef void(__cdecl *dExecuteCOG)(const char* szCOGScript, const char* szSourceRef, const char* szSenderRef, const char* szSenderID, const char* szParam0, const char* szParam1, const char* szParam2, const char* szParam3, char* szReturn);
 
 
 
@@ -253,3 +260,38 @@ struct SMITHCALLS
 // can implement texture upscaling here.
 // return true(1) if handled,  or false (0) if not
 //int __cdecl OnProcessTexture(void* input, int inWidth, int inHeight, int inStride, void* output, int outStride)
+
+
+// called by smith when initiating a smush cutscene.  pBuffer/len is the contents of a *.san file.
+// return custom handle that will be passed to all further smushXXXXX functions
+//void* __cdecl smushLoad(void* pBuffer, int len)
+
+
+// called by smith when initiating a smush cutscene.
+// return video properties
+//void __cdecl smushGetInfo(void* smush, int& width, int& height, int& numframes, double& fps)
+
+
+// called by smith continuously during smush cutscene playback. plugin is responsible for tracking time.
+// return values:
+// 0 - repeat frame (smith will redraw previous frame)
+// 1 - new frame (smith will call smushGetFrame/smushGetCutsceneStringId for updated info)
+// 2 - done (smith uses this to detect when cutscene playback has finished)
+//int __cdecl smushFrame(void* smush)
+
+
+// called by smith whenever smushFrame returns 1.
+// format is 24bit RGB
+//void __cdecl smushGetFrame(void* smush, void* scan0, int stride)
+
+
+// called by audio driver whenever it requires the next streaming PCM sample buffer. may be threaded.
+// stereo 16-bit 44100hz
+//void __cdecl smushGetAudio(void* smush, void* buffer, int len)
+
+// called by smith to determine the UNI string ID for cutscene subtitles of current frame.
+//int __cdecl smushGetCutsceneStringId(void* smush)
+
+
+// called by smith when finished playing smush cutscene.
+//void __cdecl smushDestroy(void* smush)
