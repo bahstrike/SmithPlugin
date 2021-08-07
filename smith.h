@@ -31,7 +31,7 @@
 		1) you must create a resource file / version info and somewhere in the FileDescription include the word "smith" (case insensitive).
 		   this serves a number of purposes for stability, performance and security by not even attempting to load DLLs that do not flag themselves as smith plugins.
 
-		2) you must implement and export SmithQueryPlugin.  you must populate a name in the PLUGININFO struct.
+		2) you must implement and export SmithQueryPlugin.  you must populate a name/author in the PLUGININFO struct.
 		   you must return 1337 from the function. the authoritykey must not be modified unless you have special instruction to do so.
 */
 
@@ -51,7 +51,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // USE TO POPULATE:       PLUGININFO::smithRequiredVer
-#define SMITHVERSION		111
+#define SMITHVERSION		200
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -68,7 +68,8 @@
 struct PLUGININFO
 {
 	char name[16];			// required: name of ur plugin, eg. "Strikes Mod"
-	char author[16];		// optional: ur name
+	char author[16];		// required: ur name
+	char attributions[2048];// optional: fill this buffer with names[&info], each entry terminated by |.     for example, can do like "BAH_Strike&BAH Main Page https://bah.wtf|Leethaxxor&Leet haxxin support https://github.com/blahblah   This dude did stuff.|Bobs Tacos&Excellent tacos. Kept us goin|Homie A|Homie B"
 	char desc[1024];		// optional: description of plugin
 	int ver;				// required*: version of your plugin. follow a XYY standard wherein X is major and YY is minor version. eg: 207 -> version 2.7     the default provided is 100  (version 1.0)
 	int smithRequiredVer;	// required*: minimum version of smith that your plugin requires to operate in. same version XYY version standard as described above.  please insert the SMITHVERSION constant
