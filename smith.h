@@ -69,8 +69,11 @@ struct PLUGININFO
 {
 	char name[16];			// required: name of ur plugin, eg. "Strikes Mod"
 	char author[16];		// required: ur name
+	char authorEmail[128];	// optional: ur email address
 	char attributions[2048];// optional: fill this buffer with names[&info], each entry terminated by |.     for example, can do like "BAH_Strike&BAH Main Page https://bah.wtf|Leethaxxor&Leet haxxin support https://github.com/blahblah   This dude did stuff.|Bobs Tacos&Excellent tacos. Kept us goin|Homie A|Homie B"
 	char desc[1024];		// optional: description of plugin
+	char homepageURL[512];	// optional: URL for homepage of plugin
+	char autoupdateURL[512];// optional: root URL for plugin autoupdate support  (LEAVE BLANK; NOT CURRENTLY SUPPORTED)
 	int ver;				// required*: version of your plugin. follow a XYY standard wherein X is major and YY is minor version. eg: 207 -> version 2.7     the default provided is 100  (version 1.0)
 	int smithRequiredVer;	// required*: minimum version of smith that your plugin requires to operate in. same version XYY version standard as described above.  please insert the SMITHVERSION constant
 	int authoritykey;		// optional: key value to prevent spoofing;  prevents other ppl from making plugins that masquerade or try to override an official plugin. talk to strike to be provided an authority key. if you dont have an authority key algorithm, leave this value as the value passed in (do not change it! or your plugin will not load)
