@@ -139,12 +139,6 @@ extern "C" {
 		return 0;// not handled;  let smith deal with it
 	}
 
-	// do not distribute this algorithm so long as u want to ensure that your mod identity is protected
-	void _smith_authenticate_smithplugin(const char* szName, int& key)
-	{
-		// if you do not have, then leave blank. do not modify key
-	}
-
 	int _smith_formatversion(int major, int minor)
 	{
 		return major * 100 + minor;
@@ -155,11 +149,14 @@ extern "C" {
 		// fill out the details
 		strcpy(p.name, "Sample Plugin");
 		strcpy(p.author, "bahstrike");
+		strcpy(p.authorEmail, "strike@bah.wtf");
 		strcpy(p.attributions, "BAH_Strike&BAH Main Page https://bah.wtf|Leethaxxor&Leet haxxin support https://github.com/blahblah   This dude did stuff.|Bobs Tacos&Excellent tacos. Kept us goin|Homie A|Homie B");
 		strcpy(p.desc, "mostly an example plugin project. contains demonstrations of things possible with smith engine mod development");
+		strcpy(p.homepageURL, "https://github.com/bahstrike/SmithPlugin");
 		p.ver = _smith_formatversion(1, 0);
 		p.smithRequiredVer = SMITHVERSION;
-		_smith_authenticate_smithplugin(p.name, p.authoritykey);
+
+		//p.authoritykey   // leave alone if u do not have agreed-upon algorithm
 
 		return 1337;
 	}
