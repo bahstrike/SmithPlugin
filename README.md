@@ -1,7 +1,7 @@
 # SmithPlugin
 api for writing engine mods for [Smith](https://bah.wtf/smith)
 
-
+## usage
 the follow is an excerpt from [smith.h](https://github.com/bahstrike/SmithPlugin/blob/master/smith.h)
 
 please refer to [smith.h](https://github.com/bahstrike/SmithPlugin/blob/master/smith.h) for the most up-to-date plugin development information
